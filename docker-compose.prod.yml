@@ -1,0 +1,44 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: carhaven2-mongo
+    restart: always
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    image: hamzaak10/carhaven-backend:latest
+    container_name: carhaven2-backend
+    volumes:
+      - ./backend:/usr/src/app
+    restart: always
+    ports:
+      - '5000:5000'
+    depends_on:
+      - mongo
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/carhaven
+      - JWT_SECRET=your_jwt_secret_key_here
+      - CORS_ORIGIN=http://3.106.166.56:3000
+      - ADMIN_EMAIL=admin@carhaven.local
+      - ADMIN_PASSWORD=admin123
+      - WAIT_HOSTS=mongo:27017
+
+  frontend:
+    image: hamzaak10/carhaven-frontend:latest
+    container_name: carhaven2-frontend
+    restart: always
+    ports:
+      - '3001:80'
+    volumes:
+      - ./frontend:/app
+    environment:
+      - VITE_API_URL=http://3.106.166.56:5000
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:

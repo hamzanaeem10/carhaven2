@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: carhaven-mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: carhaven-backend
+    restart: always
+    env_file: ./backend/.env
+    ports:
+      - '${BACKEND_PORT-5000}:5000'
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/carhaven
+      - WAIT_HOSTS=mongo:27017
+
+  frontend:
+    build: ./frontend
+    container_name: carhaven-frontend
+    restart: always
+    env_file: ./frontend/.env
+    ports:
+      - '${FRONTEND_PORT-3000}:80'
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
